@@ -3572,8 +3572,8 @@ function finish(){
   showSheet(resultSheet());
 }
 function sendScore(payload){
-  if(hasGas()) google.script.run.logScore(payload);
-  else console.log('score', payload);
+  if(hasNet()) certPost({ kind:'log', score:payload.score, time:payload.time,
+                          damage:payload.damage, pass:payload.pass });
 }
 
 
@@ -3735,7 +3735,9 @@ function rushSheet(){
     '<div class="row"><button class="btn primary" data-act="rushSave">기록 등록</button>' +
     '<button class="btn" id="btnRush">다시</button></div>';
 }
+let rushMem = [];
 function rushLoad(){
+  if(hasNet()) return rushMem;
   try{ return JSON.parse(window.localStorage.getItem(RUSH_KEY) || '[]'); }catch(e){ return []; }
 }
 function rushSave(){
@@ -3744,10 +3746,17 @@ function rushSave(){
   if(!name){ if(el){ el.focus(); el.placeholder = '이름을 입력하세요'; } return; }
   G.playerName = name;
   const d = new Date();
-  const list = rushLoad();
-  list.push({ name:name, total:rushTotal(), damage:G.damage,
-    date: d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') });
-  try{ window.localStorage.setItem(RUSH_KEY, JSON.stringify(list)); }catch(e){}
+  const date = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  const row = { name:name, total:rushTotal(), damage:G.damage, date:date };
+  if(hasNet()){
+    rushMem.push(row);
+    certPost({ kind:'rush', name:name, total:row.total, damage:row.damage, date:date });
+    setTimeout(()=> refreshCerts(()=>{ if(G.mode !== 'menu') showSheet(certListSheet()); }), 1200);
+  }else{
+    const list = rushLoad();
+    list.push(row);
+    try{ window.localStorage.setItem(RUSH_KEY, JSON.stringify(list)); }catch(e){}
+  }
   blip(880, 0.16, 'sine', 0.06);
   setTimeout(()=> blip(1320, 0.22, 'sine', 0.05), 150);
   showSheet(certListSheet());
@@ -4198,15 +4207,49 @@ function tickCharge(dt){
    기록
    ============================================================ */
 const CERT_KEY = 'forklift_sim_cert_v1';
+// 앱스스크립트 웹앱을 배포한 뒤 /exec 주소를 여기에 붙이면 수료자 명단이 공유됩니다.
+// 비워두면 이 기기 안에서만 남습니다.
+const CERT_URL = '';
 let certMem = [];
-function hasGas(){ return typeof google !== 'undefined' && google.script && google.script.run; }
+function hasNet(){ return !!CERT_URL; }
 function loadCerts(){ return certMem; }
+
+// 조회는 JSONP — 깃허브에서 앱스스크립트를 부르면 CORS 에 막히는 경우가 있습니다
+function certFetch(cb){
+  if(!hasNet()){ cb(null); return; }
+  let done = false;
+  const fn = 'certCb' + Date.now().toString(36);
+  const sc = document.createElement('script');
+  const cleanup = ()=>{
+    try{ delete window[fn]; }catch(e){ window[fn] = undefined; }
+    if(sc.parentNode) sc.parentNode.removeChild(sc);
+  };
+  const fail = ()=>{ if(done) return; done = true; cleanup(); cb(null); };
+  window[fn] = list =>{ if(done) return; done = true; cleanup(); cb(list); };
+  sc.onerror = fail;
+  sc.src = CERT_URL + (CERT_URL.indexOf('?') >= 0 ? '&' : '?') +
+           'game=forklift&callback=' + fn + '&t=' + Date.now();
+  document.head.appendChild(sc);
+  setTimeout(fail, 6000);
+}
+function certPost(body){
+  if(!hasNet()) return;
+  try{
+    fetch(CERT_URL, {
+      method:'POST',
+      headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+      body: JSON.stringify(Object.assign({ game:'forklift' }, body)),
+      keepalive: true
+    }).catch(()=>{});
+  }catch(e){}
+}
+
 function refreshCerts(done){
-  if(hasGas()){
-    google.script.run
-      .withSuccessHandler(list=>{ certMem = list || []; if(done) done(); })
-      .withFailureHandler(()=>{ if(done) done(); })
-      .listCertifications();
+  if(hasNet()){
+    certFetch(d =>{
+      if(d){ certMem = d.certs || []; rushMem = d.rush || []; }
+      if(done) done();
+    });
   }else{
     try{ certMem = JSON.parse(window.localStorage.getItem(CERT_KEY) || '[]'); }catch(e){}
     if(done) done();
@@ -4214,8 +4257,10 @@ function refreshCerts(done){
 }
 function persistCert(rec){
   certMem.push(rec);
-  if(hasGas()){
-    google.script.run.withSuccessHandler(list=>{ if(list) certMem = list; }).addCertification(rec);
+  if(hasNet()){
+    certPost({ kind:'cert', name:rec.name, score:rec.score,
+               damage:rec.damage, time:rec.time, date:rec.date });
+    setTimeout(()=> refreshCerts(), 1200);
   }else{
     try{ window.localStorage.setItem(CERT_KEY, JSON.stringify(certMem)); }catch(e){}
   }
@@ -4305,7 +4350,7 @@ const BRAND =
     '<circle cx="60" cy="74" r="8.5" fill="#2E3742"/><circle cx="60" cy="74" r="3.2" fill="#8A96A2"/>' +
     '<circle cx="88" cy="74" r="8.5" fill="#2E3742"/><circle cx="88" cy="74" r="3.2" fill="#8A96A2"/>' +
   '</svg>' +
-  '<div><div class="top">컬리 평택센터</div><h1>지게차 연수원</h1>' +
+  '<div><div class="top">dawnly물류센터</div><h1>지게차 연수원</h1>' +
   '<div class="sub2">리치트럭 · 좁은 통로형</div></div></div>';
 
 function menuSheet(){
