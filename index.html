@@ -488,6 +488,8 @@ const CFG = {
   reachOut: 0.30,
   legTip: 1.85,             // 차체 중심에서 앞다리 끝까지. 이 안으로는 팔레트가 못 들어온다
   overHead:  0.30,          // 구멍보다 이만큼 높으면 팔레트 위를 지나간다
+  underFoot: 0.10,          // 구멍보다 이만큼 낮으면 팔레트 밑으로 지나간다
+  pickBand:  0.75,          // 이보다 높이가 어긋난 팔레트는 아예 상대가 아니다
   scrapeLift: 0.045, liftSafe: 0.60, liftTip: 2.00, pickClear: 0.12,
   palHalf: 0.55, palH: 0.15, holeY: 0.050,
   tolY: 0.055, tolLat: 0.120, tolAng: 8*Math.PI/180,
@@ -2075,13 +2077,19 @@ function forkLogic(dt){
   G.carryCatch = false;
   G.place = null;
 
-  let gt = null;
+  /* 후보 고르기 — 앞뒤·좌우만 보면 1단에 지겟발을 넣어둔 채로 2단 팔레트를
+     밀어내게 된다. 한 단 이상 어긋난 것은 애초에 상대가 아니고, 남은 것 중에서는
+     높이 차와 거리를 함께 따져 가장 가까운 하나를 고른다. */
+  let gt = null, gcost = Infinity;
   for(const p of pallets){
     if(p.carried || p.falling) continue;
     if(Math.abs(p.x - truck.x) > 5 || Math.abs(p.z - truck.z) > 5) continue;
     const r = relToFork(p);
     if(r.long < -0.3 || r.long > 2.4 || Math.abs(r.lat) > 0.85){ p.inserted = false; continue; }
-    if(gt === null || r.long < gt.r.long) gt = { p:p, r:r };
+    const d0 = truck.lift - (p.y + CFG.holeY);
+    if(Math.abs(d0) > CFG.pickBand){ p.inserted = false; continue; }
+    const cost = Math.abs(d0)*1.5 + Math.max(0, r.long);
+    if(cost < gcost){ gcost = cost; gt = { p:p, r:r }; }
   }
 
   if(gt){
@@ -2094,21 +2102,22 @@ function forkLogic(dt){
        팔레트에 닿아서 밀려나므로 애초에 관통량이 나오지 않는다. */
     const ok = Math.abs(r.lat) < CFG.tolLat && Math.abs(r.ang) < CFG.tolAng &&
                Math.abs(dy) < CFG.tolY && okT;
-    // 지겟발이 팔레트보다 한참 높으면 그냥 위로 지나간다
+    // 지겟발이 팔레트보다 한참 높으면 위로, 한참 낮으면 밑으로 그냥 지나간다
     const over = dy > CFG.overHead;
+    const under = dy < -CFG.underFoot;
     /* 랙에 얹힌 것은 밀어서 맞출 수 없다. 밀면 뒤로 넘어간다.
        바닥에 놓인 것은 조금 틀어져도 지겟발 면으로 밀면 맞아 들어간다. */
     const onRack = !!(p.slot && p.slot.y > 0.20);
     const canNudge = !onRack && okT && Math.abs(dy) < CFG.tolY &&
                      Math.abs(r.ang) < CFG.nudgeAng && Math.abs(r.lat) < CFG.nudgeLat && !ok;
     G.gauge = { lat:r.lat, ang:r.ang, dy:dy, tilt:forkAngle(), pen:pen,
-                ok:ok, reach:truck.reach, over:over, nudge:canNudge,
+                ok:ok, reach:truck.reach, over:over, under:under, nudge:canNudge,
                 room: Math.max(0, CFG.reachMax - truck.reach) };
 
     // 리치를 내미는 동안에도 지겟발은 앞으로 나간다
     const adv = truck.v + Math.max(0, levers.reach.val) * CFG.reachSpeed;
 
-    if(pen > 0 && Math.abs(r.ang) < 0.7 && !over){
+    if(pen > 0 && Math.abs(r.ang) < 0.7 && !over && !under){
       if(ok || (p.inserted && pen > 0.50)){
         p.inserted = true;
         if(pen > 0.85 && truck.lift > p.y + 0.035){
@@ -2145,7 +2154,7 @@ function forkLogic(dt){
           if(Math.hypot(p.x - p.zone.x, p.z - p.zone.z) > 0.55){ p.zone.pallet = null; p.zone = null; }
         }
       }
-    }else if(pen <= 0 || over) p.inserted = false;
+    }else if(pen <= 0 || over || under) p.inserted = false;
   }else G.gauge = null;
 
   legPush(dt);
@@ -2841,6 +2850,7 @@ function drawGauge(){
   const allOk = okLat && okAng && okY && okT;
   lbl.textContent =
       g.over ? '팔레트 위로 지나갑니다'
+    : g.under ? '팔레트 밑으로 지나갑니다 · 포크를 올리세요'
     : !okT ? '마스트 수평 아님 · ' + (Math.round(Math.abs(g.tilt)*180/Math.PI*10)/10).toFixed(1) + '°'
     : !okY ? '포크 높이 ' + (cm >= 0 ? '+' : '') + cm + 'cm'
     : g.nudge ? '밀어서 정렬됩니다'
