@@ -11,12 +11,13 @@ const PHYS = {
   stopV: 0.02, stopOm: 0.03,                      // 완전 정지 판정
   rotK: 2.6,                                      // 접촉점이 중심을 빗나갈 때 도는 정도
   pushV: 1.0,                                     // 밀린 거리 → 속도로 옮기는 비율 (1이면 그대로)
+  maxPushV: 1.2,                                  // 한 번에 밀렸을 때 튀어나가지 않게 속도 상한
   wallR: 0.60,                                    // 벽·기둥 판정용 파렛트 반경
   iters: 4,                                       // 파렛트끼리 겹침 해소 반복
   maxFix: 0.15,                                   // 프레임당 최대 관통 해소
   /* 삽입 */
   insLat: 0.12, insAng: 8*Math.PI/180,            // 구멍에 들어가는 좌우·각도 여유
-  alignAng: 12*Math.PI/180, alignLat: 0.30,       // 이 안이면 밀어서 정렬된다
+  alignAng: 25*Math.PI/180, alignLat: 0.30,       // 이 안이면 밀어서 정렬된다
   blockLat: 0.30,                                 // 이보다 벗어나면 블록·모서리 접촉
   deepIns: 0.85, halfIns: 0.50,                   // 정삽입 / 반삽입 깊이
   slipHalf: 0.35,                                 // 반삽입으로 들었을 때 앞으로 미끄러지는 속도(후경 0일 때)
@@ -51,11 +52,12 @@ function palletI(p){
 }
 
 /* 접촉점 (px,pz) 에서 방향 (nx,nz) 로 dist 만큼 밀기. 위치를 옮기고 속도·회전을 준다. */
-function pushPallet(p, nx, nz, dist, px, pz, dt){
+function pushPallet(p, nx, nz, dist, px, pz, dt, oneShot){
   if(!palletFree(p)) return false;
   const d = Math.min(dist, PHYS.maxFix*3);
   p.x += nx*d; p.z += nz*d;
-  const vv = d/Math.max(dt, 0.008) * PHYS.pushV;
+  let vv = d/Math.max(dt, 0.008) * PHYS.pushV;
+  if(oneShot) vv = Math.min(vv, PHYS.maxPushV);     // 한 번에 툭 민 것은 튀어나가지 않게
   const vn = p.vx*nx + p.vz*nz;
   if(vn < vv){ p.vx += (vv - vn)*nx; p.vz += (vv - vn)*nz; }
   if(px != null){

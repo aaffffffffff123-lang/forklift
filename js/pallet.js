@@ -5,12 +5,12 @@
    ============================================================ */
 
 /* 파렛트 종류. sides 4 는 사방차입, 2 는 양방향(앞뒤만). insLo 는 지겟발이
-   들어가는 최저 높이(파렛트 바닥 기준). 하판이 있는 것은 턱 때문에 0.015. */
+   들어가는 최저 높이(파렛트 바닥 기준). 그보다 낮으면(랙·상판 위 파렛트) 하판 턱을 민다. */
 const PAL_KINDS = {
-  aj:   { n:'아주렌탈', deck:0x9FBE38, foot:0x86A32C, w:1.10, d:1.10, h:0.150, sides:4, bottom:true,  insLo:0.015, insHi:0.115, ext:false },
-  kpp:  { n:'KPP',      deck:0x7A2333, foot:0x5F1A27, w:1.10, d:1.10, h:0.150, sides:4, bottom:true,  insLo:0.015, insHi:0.115, ext:false },
+  aj:   { n:'아주렌탈', deck:0x9FBE38, foot:0x86A32C, w:1.10, d:1.10, h:0.150, sides:4, bottom:true,  insLo:0.0,   insHi:0.115, ext:false },
+  kpp:  { n:'KPP',      deck:0x7A2333, foot:0x5F1A27, w:1.10, d:1.10, h:0.150, sides:4, bottom:true,  insLo:0.0,   insHi:0.115, ext:false },
   wood: { n:'목재',     deck:0xA97C43, foot:0x8B6233, w:1.10, d:1.10, h:0.140, sides:2, bottom:false, insLo:-0.05, insHi:0.105, ext:true  },
-  euro: { n:'수입 1200', deck:0x8F7A5A, foot:0x6E5A3C, w:1.20, d:1.00, h:0.145, sides:4, bottom:true,  insLo:0.015, insHi:0.110, ext:true  }
+  euro: { n:'수입 1200', deck:0x8F7A5A, foot:0x6E5A3C, w:1.20, d:1.00, h:0.145, sides:4, bottom:true,  insLo:0.0,   insHi:0.110, ext:true  }
 };
 
 /* 화물 프리셋 — 높이는 화물만. 무게는 범위. cg 는 무게중심 높이. c 는 깨짐 등급.

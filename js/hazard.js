@@ -195,7 +195,14 @@ function updateCars(dt){
       const ahead = (truck.x - c.x) * c.dir;
       if(ahead > 0 && ahead < 26) blocked = true;
     }
-    const want = blocked ? Math.min(2.0, Math.abs(truck.v) + 0.6) : c.base;
+    let want = blocked ? Math.min(2.0, Math.abs(truck.v) + 0.6) : c.base;
+    // 같은 차선 앞차와 간격 유지 — 서로 뚫고 지나가지 않는다
+    for(const o of cars){
+      if(o === c || o.lane !== c.lane) continue;
+      let gap = (o.x - c.x) * c.dir;
+      if(gap < 0) gap += 252;
+      if(gap < 14) want = Math.min(want, Math.max(0, o.v - (14 - gap)*0.6));
+    }
     c.v += (want - c.v) * (1 - Math.exp(-1.8*dt));
     c.x += c.dir * c.v * dt;
     if(c.x > 126) c.x = -126;

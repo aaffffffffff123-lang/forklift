@@ -284,7 +284,7 @@ function buildWorld(){
     const dir = lane === 0 ? 1 : -1;
     const x = -110 + i*28;
     g.position.set(x, 0, ROAD.lane[lane]);
-    g.rotation.y = dir > 0 ? Math.PI/2 : -Math.PI/2;
+    g.rotation.y = dir > 0 ? 0 : Math.PI;
     g.visible = false;
     scene.add(g);
     cars.push({ mesh:g, lane:lane, dir:dir, x:x, v:9 + (i%3)*2, base:9 + (i%3)*2, honk:0 });

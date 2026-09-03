@@ -225,8 +225,8 @@ function fault(msg, code){
 }
 
 /* 랙 위 파렛트를 밀면 떨어지고, 바닥·평치는 밀린다 */
-function shovePallet(p, nx, nz, dist, cx, cz, dt){
-  if(palletFree(p)){ pushPallet(p, nx, nz, dist, cx, cz, dt); return; }
+function shovePallet(p, nx, nz, dist, cx, cz, dt, oneShot){
+  if(palletFree(p)){ pushPallet(p, nx, nz, dist, cx, cz, dt, oneShot); return; }
   if(p.slot){
     p.x += nx*dist; p.z += nz*dist;
     const off = Math.hypot(p.x - p.slot.x, p.z - p.slot.z);
@@ -333,44 +333,35 @@ function forkLogic(dt){
   }
 
   if(p.inserted){
+    // 꽂힌 파렛트는 바닥에 그대로 있고 지겟발만 미끄러져 들어간다. 각도만 지겟발을 따른다.
+    const tw = Math.abs(wrapPi(truck.h - p.insYaw));
     if(palletFree(p)){
-      const pose = carryPose();
-      p.x = pose.x + dirX(truck.h)*p.insLon; p.z = pose.z + dirZ(truck.h)*p.insLon;
       p.yaw = truck.h + p.insRel;
       p.vx = 0; p.vz = 0; p.om = 0;
       detachPlace(p);
-      const tw = Math.abs(wrapPi(truck.h - p.insYaw));
-      if(sticky){
-        if(tw >= PHYS.peelMin && tw <= PHYS.peelMax){
-          p.peelT = (p.peelT || 0) + dt;
-          if(p.peelT >= PHYS.peelTime && p.adh > 0.05){
-            p.adh = 0; for(const n of nb) n.q.adh = Math.min(n.q.adh, 0.2);
-            statAdd('peelN', 1);
-            blip(300, 0.18, 'sawtooth', 0.04); toast('랩이 떨어졌습니다', true);
-          }
-        }else if(tw > PHYS.peelMax && !p.scraped){
-          p.scraped = true; fault('옆 파렛트 긁힘', 'H8');
-        }
-      }
-    }else if(p.slot){
-      const tw = Math.abs(wrapPi(truck.h - p.insYaw));
-      if(sticky){
-        if(tw >= PHYS.peelMin && tw <= PHYS.peelMax){
-          p.peelT = (p.peelT || 0) + dt;
-          if(p.peelT >= PHYS.peelTime && p.adh > 0.05){
-            p.adh = 0; for(const n of nb) n.q.adh = Math.min(n.q.adh, 0.2);
-            statAdd('peelN', 1);
-            blip(300, 0.18, 'sawtooth', 0.04); toast('랩이 떨어졌습니다', true);
-          }
-        }else if(tw > PHYS.peelMax && !p.scraped){ p.scraped = true; fault('옆 파렛트 긁힘', 'H8'); }
+      // 끝까지 들어간 뒤 더 밀면 캐리지가 파렛트를 민다
+      const full = palletHalfD(p)*2;
+      if(pen > full + 0.02 && adv > 0.05){
+        shovePallet(p, dirX(truck.h), dirZ(truck.h), Math.min(pen - full, adv*dt*1.6 + 0.004), null, null, dt);
+        SND.scrape = 0.3;
       }
     }
-    p.insDepth = Math.max(p.insDepth, pen);
-    if(pen < 0.15) p.inserted = false;
-    if(truck.lift > p.insLift + 0.035){
+    if(sticky){
+      if(tw >= PHYS.peelMin && tw <= PHYS.peelMax){
+        p.peelT = (p.peelT || 0) + dt;
+        if(p.peelT >= PHYS.peelTime && p.adh > 0.05){
+          p.adh = 0; for(const n of nb) n.q.adh = Math.min(n.q.adh, 0.2);
+          statAdd('peelN', 1);
+          blip(300, 0.18, 'sawtooth', 0.04); toast('랩이 떨어졌습니다', true);
+        }
+      }else if(tw > PHYS.peelMax && !p.scraped){ p.scraped = true; fault('옆 파렛트 긁힘', 'H8'); }
+    }
+    p.insDepth = Math.max(p.insDepth, Math.min(pen, palletHalfD(p)*2));
+    if(pen < -0.02) p.inserted = false;
+    else if(truck.lift > p.insLift + 0.035){
       if((p.insDepth || 0) < 0.30){
         // 발끝만 걸친 채 들었다 — 파렛트가 앞으로 밀려 넘어간다
-        p.inserted = false; shovePallet(p, dirX(truck.h), dirZ(truck.h), 0.25, null, null, dt);
+        p.inserted = false; shovePallet(p, dirX(truck.h), dirZ(truck.h), 0.20, null, null, dt, true);
         fault('삽입 부족 · 파렛트가 밀려 넘어갑니다', 'INS');
       }else liftPallet(p, st.band, nb);
     }
