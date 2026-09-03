@@ -521,7 +521,9 @@ function carriedLogic(dt){
   const supY = sup.y;
   const floorY = (onLegs && supY < 0.05) ? 0.30 : supY;
   if(G.legCool > 0) G.legCool -= dt;
-  if(G.place && !G.place.fit && G.place.dy < 0.35 && sup.place && sup.place.kind === 'slot'){
+  // 높이 안 맞는 단 — 파렛트가 실제로 칸 위에 들어가 있을 때만 위 빔에 걸린다
+  if(G.place && !G.place.fit && G.place.dy < 0.35 && sup.place && sup.place.kind === 'slot' &&
+     Math.hypot(G.place.lat, G.place.lon) < 0.55 && truck.reach > 0.25){
     if(truck.lift < sup.y + 0.30){
       truck.lift = Math.max(truck.lift, sup.y + 0.30);
       if(G.legCool <= 0){ G.legCool = 2.4; impact('steel', 0.6); fault('화물이 위 빔에 걸립니다 · 이 단에는 안 들어갑니다', 'FIT'); }

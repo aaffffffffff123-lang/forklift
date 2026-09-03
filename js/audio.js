@@ -252,6 +252,11 @@ function impact(kind, vol){
       }, i*230);
     }
     buzz([90, 60, 90, 60, 160]);
+  }else if(kind === 'glass'){
+    // 유리 — 높은 잡음 뒤에 짧게 쨍
+    noise(0.16, 'highpass', 2600, 0, 0.22*v, 1.5);
+    ring(3100, 0.30, 0.040*v, 'sine'); ring(4400, 0.22, 0.028*v, 'sine'); ring(2300, 0.18, 0.030*v);
+    buzz([25, 30, 25]);
   }else{
     noise(0.20, 'lowpass', 340, 0, 0.35*v, 3);
   }

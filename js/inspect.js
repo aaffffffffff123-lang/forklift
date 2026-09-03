@@ -204,7 +204,7 @@ function inspSheet(){
 }
 
 function inspAnswer(sayBad){
-  if(INSP.answered) return;
+  if(INSP.answered || INSP.i >= DEFECTS.length) return;
   const bad = INSP.bad[INSP.i];
   INSP.correct = (sayBad === bad);
   INSP.answered = true;

@@ -7,7 +7,7 @@ function rushStart(){
   G.mode = 'rush'; G.time = 0; G.damage = 0; G.fault = 0; G.rushIdx = 0; G.rushDone = false;
   G.defects = {}; G.defectSeen = {}; G.st = {};
   applyTime(2);
-  resetWorld({ ext:0, unwrap:0, cargos:['water','oil','bottle','frozen'] }, mulberry(77));
+  resetWorld({ ext:0, unwrap:0, cargos:['water','oil','veg'] }, mulberry(77));
   ghostStart();
   G.running = true;
   rushStep();

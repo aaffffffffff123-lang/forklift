@@ -100,8 +100,8 @@ function buildDock(){
       zones.push({ id:'입고-' + (k+1), x:x, y:0, z:INBOUND.z, yaw:0, pallet:null, kind:'zone', inbound:true });
       addPaint(x, INBOUND.z - 0.71, 1.5, 0.08, 0x1A73E8); addPaint(x, INBOUND.z + 0.71, 1.5, 0.08, 0x1A73E8);
     });
-    scene.add(makeSign('출고 대기', 4.6, 9, 97.5));
-    scene.add(makeSign('입고 하차', 4.6, 9, 90.8));
+    scene.add(makeSign('출고 대기', 4.6, 8, 99));
+    scene.add(makeSign('입고 하차', 4.6, 8, 90.8));
   }
   /* ── 순환 도로 ── */
   {
@@ -287,6 +287,11 @@ function bedCells(n){
       out.push({ x:WING.cols[c], z:WING.row0 + r*WING.pitch, col:c, row:r });
     }
   }
+  return out;
+}
+function bedCellsOuter(n){
+  const out = [];
+  for(let r=0;r<WING.rows && out.length < n;r++) out.push({ x:WING.cols[0], z:WING.row0 + r*WING.pitch, col:0, row:r });
   return out;
 }
 function palletsOnBed(){ return pallets.filter(p=> p.surf === 'bed' && !p.carried && !p.broken); }

@@ -11,31 +11,31 @@
 const COURSES = {
   exam: { n:'자격시험 코스', w:3.2, timeLimit:240, exam:true,
     start:{x:-33, z:62, h:Math.PI/2},
-    pts:[{x:-33,z:62},{x:-20,z:62},{x:-20,z:70},{x:-8,z:70},{x:-8,z:78},{x:-2.5,z:78}],
-    pick:{x:-17.2, z:62, yaw:Math.PI/2},           // 하차작업 — 여기서 파렛트를 꺼낸다 (적재대)
-    drop:{x:0.4, z:78, yaw:Math.PI/2},               // 상차작업 — 파렛트 위에 얹는다
+    pts:[{x:-33,z:62},{x:-20,z:62},{x:-20,z:70},{x:-8,z:70},{x:-8,z:78},{x:-1.0,z:78}],
+    pick:{x:-19.6, z:62, yaw:Math.PI/2},           // 하차작업 — 첫 직선 끝에서 파렛트를 꺼낸다 (적재대)
+    drop:{x:1.2, z:78, yaw:Math.PI/2},               // 상차작업 — 마지막 직선 끝 파렛트 위에 얹는다
     finish:{x:-33, z:62, r:1.4} },
   eight: { n:'8자 코스', w:2.8, loop:true, start:{x:-27, z:71, h:0},
     pts:(function(){ const o=[]; for(let i=0;i<=48;i++){ const t=i/48*Math.PI*2; const a=8.5; o.push({ x:-19 + a*Math.sin(t)*Math.cos(t)*1.0 + a*Math.sin(t)*0.0, z:71 + a*Math.sin(t)*Math.cos(t)*0 + a*Math.sin(t) }); } return o; })() },
   crank: { n:'크랭크', w:2.6, start:{x:-34, z:64, h:Math.PI/2},
     pts:[{x:-34,z:64},{x:-24,z:64},{x:-24,z:73},{x:-12,z:73},{x:-12,z:81},{x:-3,z:81}], finish:{x:-3, z:81, r:1.5} },
-  revS: { n:'후진 S자', w:3.0, reverse:true, start:{x:-4, z:66, h:-Math.PI/2},
+  revS: { n:'후진 S자', w:3.0, reverse:true, start:{x:-4, z:66, h:Math.PI/2},
     pts:[{x:-4,z:66},{x:-10,z:66},{x:-14,z:69},{x:-18,z:72},{x:-24,z:74},{x:-30,z:71},{x:-35,z:68}], finish:{x:-35, z:68, r:1.5} },
   park: { n:'통로 평행주차', w:3.0, park:true, start:{x:-33, z:72, h:Math.PI/2},
     pts:[{x:-33,z:72},{x:-10,z:72}], slot:{x:-14, z:72} },
   slalom: { n:'야드 슬라럼', w:3.4, fast:true, start:{x:-34, z:60, h:Math.PI/2},
-    pts:[{x:-34,z:60},{x:-26,z:60},{x:-22,z:66},{x:-16,z:60},{x:-10,z:66},{x:-4,z:60},{x:-2,z:70},{x:-10,z:78},{x:-20,z:78},{x:-30,z:74},{x:-36,z:78}], finish:{x:-36, z:78, r:1.6} },
+    pts:[{x:-34,z:60},{x:-26,z:60},{x:-22,z:66},{x:-16,z:60},{x:-10,z:66},{x:-4,z:60},{x:-2,z:70},{x:-10,z:76},{x:-20,z:76},{x:-30,z:72},{x:-36,z:75}], finish:{x:-36, z:75, r:1.6} },
   train: { n:'열차', w:4.2, train:true, hidden:true, start:{x:-34, z:60, h:Math.PI/2},
     pts:[{x:-34,z:60},{x:-14,z:60},{x:-6,z:66},{x:-6,z:76},{x:-14,z:82},{x:-30,z:82}], finish:{x:-30, z:82, r:2.4}, n8:7 }
 };
 /* 8자 — 위 식이 어색해서 두 원을 잇는 점열로 다시 만든다 */
 COURSES.eight.pts = (function(){
-  const o = [], r = 6.2, c1 = {x:-26, z:71}, c2 = {x:-12, z:71};
+  const o = [], r = 6.2, c1 = {x:-26, z:70}, c2 = {x:-12, z:70};
   for(let i=0;i<=24;i++){ const t = Math.PI/2 + i/24*Math.PI*2; o.push({ x:c1.x + r*Math.cos(t), z:c1.z - r*Math.sin(t) }); }
   for(let i=0;i<=24;i++){ const t = Math.PI/2 + Math.PI - i/24*Math.PI*2; o.push({ x:c2.x + r*Math.cos(t), z:c2.z - r*Math.sin(t) }); }
   return o;
 })();
-COURSES.eight.start = { x:-19, z:71, h:0 };
+COURSES.eight.start = { x:-19, z:70, h:0 };
 
 const PICK_LEVELS = [
   { n:'정면 바닥', d:'파렛트가 정면에 반듯하게 놓입니다. 2.5m쯤 앞에 정지해 리치를 끝까지 내밀어 꽂고 들어올리세요.',

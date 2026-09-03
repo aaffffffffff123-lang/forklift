@@ -57,7 +57,7 @@ const TUT = [
   {
     title:'교차로에서 정지하고 경적',
     desc:'통로 끝 교차로에는 정지선이 있습니다. 완전히 정지한 뒤 경적을 울리고, 보행자가 지나가면 진행합니다. 표시된 교차로를 그렇게 통과하세요.',
-    marker:{x:0, z:12.5},
+    marker:{x:36.5, z:21.0},
     check:()=> !!G.flags.xed
   },
   {
@@ -205,7 +205,7 @@ function eduBegin(firstTime){
   G.inspMiss = 0; G.inspHit = 0; G.defects = {}; G.defectSeen = {};
   G.running = false;
   applyTime(2);
-  resetWorld();
+  resetWorld({ ext:0, unwrap:0, cargos:['water','veg','oil'] }, mulberry(31));
   showTask('교육', '시업점검', '운행 전에 장비 상태부터 확인합니다.');
   inspStart(firstTime);
 }
@@ -214,7 +214,7 @@ function eduResume(){
   const sv = eduLoad();
   hideSheet(); enterMode();
   G.mode = 'edu';
-  resetWorld();
+  resetWorld({ ext:0, unwrap:0, cargos:['water','veg','oil'] }, mulberry(31));
   applyTime(2);
   G.step = sv ? (sv.step || 0) : 0;
   G.damage = sv ? (sv.damage || 0) : 0;

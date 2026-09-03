@@ -228,7 +228,7 @@ function genMission(type, P){
     const zs = freeZones(z=> z.stage);
     if(zs.length < n) return null;
     for(const q of palletsOnBed()) removePallet(q);
-    const cells = bedCells(n);
+    const cells = bedCellsOuter(n);     // 안쪽 열은 지겟발이 안 닿는다 — 하차는 바깥 열만
     const ps = [];
     for(const c of cells){
       const q = createPallet(pickProfile(Math.random, { ext:0, unwrap:0, cargos:['water','oil','bottle'] }, false), { x:c.x, z:c.z, y:WING.y, yaw:0 });
@@ -236,7 +236,7 @@ function genMission(type, P){
     }
     DOCK.wingHere = true; DOCK.truckMesh.visible = true; DOCK.wingOpen = true;
     return { type:type, pallet:ps[0], pallets:ps, from:null, to:null, title: MISSION_NAMES.unload,
-      desc:'윙바디 적재함의 파렛트 ' + n + '개를 하차해 출고 대기 구역에 놓기<br>붙어 있습니다. 바깥 열부터, 랩을 떼고 빼세요',
+      desc:'윙바디 적재함 바깥 열 파렛트 ' + n + '개를 하차해 출고 대기 구역에 놓기<br>서로 붙어 있습니다. 랩을 떼고 빼세요',
       done:()=> ps.every(q=> q.broken || (q.zone && q.zone.stage && !q.carried)) };
   }
   return null;

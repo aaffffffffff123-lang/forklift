@@ -33,7 +33,8 @@ function tipOver(){
 }
 
 function hazards(dt){
-  const soft = G.mode === 'drill';      // 연습은 경고만 하고 사고로 잇지 않는다
+  // 연습·드라이브·열차는 경고만 하고 사고로 잇지 않는다. 자격시험은 채점표로 따로 본다.
+  const soft = G.mode === 'drill' || G.mode === 'drive' || G.mode === 'train' || G.mode === 'course';
   const sp = Math.abs(truck.v);
   const moving = sp > 0.45;      // 이 밑은 자리 잡는 중으로 본다
   const step = sp * dt;
@@ -120,7 +121,7 @@ function intersections(dt){
     if(!here){
       // 빠져나갔다 — 통과 판정
       const ok = INTER.stopped && INTER.horned;
-      statAdd('xN', 1); if(ok){ statAdd('xOk', 1); if(G.mode === 'edu' && G.step === 8 && Math.hypot(INTER.cur.x, INTER.cur.z - 12.5) < 0.1) G.flags.xed = true; }
+      statAdd('xN', 1); if(ok){ statAdd('xOk', 1); if(G.mode === 'edu' && G.step === 8 && Math.hypot(INTER.cur.x - 36.5, INTER.cur.z - 21.0) < 0.1) G.flags.xed = true; }
       if(!ok && INTER.cool <= 0 && INTER.entV > 0.4){
         INTER.cool = 4;
         fault(!INTER.stopped ? '교차로 일시정지 없이 통과' : '교차로 경적 없이 통과', 'H5');

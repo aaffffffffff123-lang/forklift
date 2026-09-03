@@ -71,8 +71,13 @@ function ghostStart(){
   GH.rec = []; GH.t = 0; GH.play = false;
   try{ const r = JSON.parse(window.localStorage.getItem(ghostKey()) || 'null'); GH.best = r && r.frames ? r : null; }catch(e){ GH.best = null; }
   if(!GH.mesh){
+    // makeForklift 는 마스트·캐리지 전역을 갈아끼운다. 고스트를 만들고 나면 원래 것으로 되돌린다.
+    const m0 = mastGroup, i0 = innerMast, c0 = carriage, st0 = seeThrough.length;
     GH.mesh = makeForklift();
-    GH.mesh.traverse(o=>{ if(o.isMesh && o.material){ o.material = o.material.clone(); o.material.transparent = true; o.material.opacity = 0.32; o.material.depthWrite = false; o.castShadow = false; } });
+    mastGroup = m0; innerMast = i0; carriage = c0;
+    seeThrough.length = st0;
+    GH.mesh.traverse(o=>{ if(o.isMesh && o.material){ o.material = o.material.clone(); o.material.transparent = true; o.material.opacity = 0.32; o.material.depthWrite = false; o.castShadow = false; o.receiveShadow = false; } });
+    GH.mesh.renderOrder = 4;
     scene.add(GH.mesh);
   }
   GH.mesh.visible = !!GH.best;
@@ -121,7 +126,7 @@ function dailyStart(){
   G.defects = {}; G.defectSeen = {}; G.chargeStep = false; G.st = {};
   applyTime(2);
   const rng = mulberry(dailySeed());
-  resetWorld({ ext:0, unwrap:0, cargos:['water','oil','bottle','frozen'] }, rng);
+  resetWorld({ ext:0, unwrap:0, cargos:['water','oil','veg','frozen','bottle'] }, rng);
   G.dailyCourse = dailyCourse(rng);
   ghostStart();
   G.running = true;

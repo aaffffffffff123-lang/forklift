@@ -144,6 +144,8 @@ function segDist(px, pz, a){
 function wallsResolve(p){
   const r = PHYS.wallR;
   let hit = false;
+  // 상판(적재함·엘베) 위 파렛트는 그 상자 안에만 가둔다 — 원 근사 벽은 좁은 방에서 너무 보수적이다
+  if(p.surf) return surfConfine(p);
   for(const a of WALLS.segs){
     const q = segDist(p.x, p.z, a);
     if(q.d < r && q.d > 1e-6){
@@ -175,8 +177,11 @@ function wallsResolve(p){
       p.vx *= 0.2; p.vz *= 0.2; hit = true;
     }
   }
-  // 상판 안에 갇힌 것 (트럭 적재함·엘베) — 상자 안에 가둔다
-  if(p.surf && typeof surfRect === 'function'){
+  return hit;
+}
+function surfConfine(p){
+  let hit = false;
+  if(typeof surfRect === 'function'){
     const rc = surfRect(p.surf);
     if(rc){
       const c = Math.abs(Math.cos(p.yaw)), s = Math.abs(Math.sin(p.yaw));

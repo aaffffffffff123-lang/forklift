@@ -140,8 +140,10 @@ function makeCargoMesh(cargo, seed, kindW, kindD){
   let y = 0;
   if(cargo === 'misc'){
     const n = 4;
+    const hs = []; let sum = 0;
+    for(let i=0;i<n;i++){ const h = 0.36 + rnd(i)*0.12; hs.push(h); sum += h; }
     for(let i=0;i<n;i++){
-      const h = 0.36 + rnd(i)*0.12;
+      const h = hs[i] * cp.h / sum;          // 층 높이 합 = 프리셋 높이
       const w = fw - rnd(i+7)*0.10, d = fd - rnd(i+3)*0.10;
       addLayer(y, h, w, d, cp.col[(seed+i)%cp.col.length], 0.9, b=>{ b.rotation.y = (rnd(i+11)-0.5)*0.06; });
       y += h;

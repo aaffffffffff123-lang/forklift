@@ -120,7 +120,7 @@ function resetWorld(params, rng){
   for(const zn of zones) zn.pallet = null;
   clearDebris();
   driverReset();
-  G.postDrop = null; G.busy = false; G.driveTip = 0; G.speedMul = 1; G.st = G.st || {};
+  G.postDrop = null; G.busy = false; G.driveTip = 0; G.speedMul = 1; G.st = G.st || {}; G.outUnlocked = false; G.pedLimit = null;
   if(truckGroup) truckGroup.rotation.z = 0;
   INTER.cur = null;
   if(typeof setRain === 'function') setRain(false);

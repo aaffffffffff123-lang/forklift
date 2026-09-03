@@ -187,7 +187,7 @@ function drive(dt){
     G.jolt += dt;
     if(G.jolt > 0.9){ G.jolt = 0; thud(0.10); }
   }
-  const rl = levers.reach.val; truck.reach = clamp(truck.reach + Math.sign(rl)*Math.pow(Math.abs(rl), 3) * CFG.reachSpeed * hyd * dt, 0, CFG.reachMax);
+  const rl = levers.reach.val; truck.reach = clamp(truck.reach + Math.sign(rl)*Math.pow(Math.abs(rl), 1.6) * CFG.reachSpeed * hyd * dt, 0, CFG.reachMax);
   truck.tilt  = clamp(truck.tilt  - levers.tilt.val  * CFG.tiltSpeed  * hyd * dt, -CFG.tiltFwd, CFG.tiltBack);
 
   // 정격 초과 — 그 높이 이상으로는 올라가지 않는다
